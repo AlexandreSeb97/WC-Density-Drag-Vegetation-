@@ -11,19 +11,19 @@ SMALL = 1e-6
 Ar = 1.25 # Erosion coefficient
 rho0 = 1000 # kg/m3 - water density
 alpha = 0 # Thermal expansivity
-px0 = 0.0001 # Magnitude of pressure gradient forcing
+px0 = 0.001 # Magnitude of pressure gradient forcing
 t_px = 0 # Periodic pressure forcing
 
 # Model Parameters
-H = 10 # Column depth (m)
-Length = 10 # Plane Length (m)
-N = 80  # No. of grid points
-dt = 60  # Size of time step (s)
-M = 900  # No. of time steps
-pop = 100  # No. of particles in column
-dz = H/N
-dx = Length/N
-beta = dt/(dz**2)
+#H = 10 # Column depth (m)
+#Length = 10 # Plane Length (m)
+#N = 80  # No. of grid points
+#dt = 60  # Size of time step (s)
+#M = 900  # No. of time steps
+#pop = 100  # No. of particles in column
+#dz = H/N
+#dx = Length/N
+#beta = dt/(dz**2)
 
 # Turbulence Closure Parameters
 A = [0.92, 0.74]

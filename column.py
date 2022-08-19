@@ -23,13 +23,15 @@ class Column:
         self.nu_t = np.zeros(N) # Turbulent viscosity
         self.Kq = np.zeros(N) # Turbulent diffusivity for q2
         self.Kz = np.zeros(N) # Turbulent scalar diffusivity
-        self.C_D = np.zeros(N) # Variable drag coefficient
+
+        self.Cveg = (np.linspace(0.0004, 0.0006, N)) #0.0005*np.ones(N) # Variable drag coefficient
+        self.Cveg[50:] = 0
         # Model Parameters
         self.H = H # Column depth (m)
         self.Length = Len # Plane Length (m)
         self.N = N  # No. of grid points
         self.dt = 60  # Size of time step (s)
-        self.M = 900  # No. of time steps
+        self.M = 2000  # No. of time steps
         self.dz = H/N
         self.dx = self.Length/N
         self.beta = self.dt/(self.dz**2)

@@ -27,14 +27,14 @@ def wc_advance(c, T_Px, Px0, t):
     dt = c.dt
 
     [Up, Vp, nu_tp, Q2p, Q2Lp, Lp, Kqp, Kzp, N_BVp, N_BVsqp, Cp] = previous(c)
-    ustar = abs(c.U[0]*math.sqrt(c.C_D[0]))
+    ustar = abs(Up[0]*math.sqrt(C_D))
     Px = pressure(N, T_Px, Px0, t)
     [Smnew, Shnew, Ghnew] = update_params(c, SMALL, A, B, C)
-    Unew = velocity(c, N, C_D, kappa, beta, dt, Px, Up, nu_tp)
+    Unew = velocity(c, N, kappa, beta, dt, Px, Up, nu_tp)
     [Cnew, N_BVnew, N_BVsqnew, rhonew] = scalar_trans(c, beta, Kzp, Cp, dz, g, rho0, alpha)
     Q2new = turb_q2(c, N, beta, dt, B, ustar, Up, nu_tp, Kqp, Kzp, Lp, N_BVsqp, Q2p, SMALL)
     Q2Lnew = turb_q2l(c, N, beta, dt, B, E, ustar, kappa, H, Up, nu_tp, zb, Kqp, Kzp, Q2Lp, Lp, N_BVsqp, Q2p, SMALL)
-    [Kqnew, Kznew, nu_tnew, Qnew, Q2Lnew, Lnew] = turbmix(c, SMALL, zb, Sq, Smnew, Shnew, nu, N_BVsqnew)
+    [Kqnew, Kznew, nu_tnew, Qnew, Q2Lnew, Lnew] = turbmix(c, SMALL, zb, Sq, Q2new, Q2Lnew, Smnew, Shnew, nu, N_BVsqp)
     
     return Unew, Cnew, Qnew, Q2new, Q2Lnew, rhonew, Lnew, nu_tnew, Kznew, Kqnew, N_BVnew, N_BVsqnew
 
@@ -67,9 +67,6 @@ def update_params(c, SMALL, A, B, C):
     B1 = B[0]
     B2 = B[1]
     C1 = C[0]
-    
-    #Update shear velocity at bottom boundary for use later
-    ustar = abs(c.U[0])*math.sqrt(c.C_D[0]) # Explicit dependence on C_D
 
     # Update parameters for the model, Sm and Sh
     Smnew = np.zeros(c.N)
@@ -87,7 +84,7 @@ def update_params(c, SMALL, A, B, C):
 
     return Smnew, Shnew, Gh
 
-def velocity(c, N, C_D, kappa, beta, dt, Px, Up, nu_tp):
+def velocity(c, N, kappa, beta, dt, Px, Up, nu_tp):
     aU = np.zeros(N)
     bU = np.zeros(N)
     cU = np.zeros(N)
@@ -96,16 +93,16 @@ def velocity(c, N, C_D, kappa, beta, dt, Px, Up, nu_tp):
     # Advance velocity (U, could also implement the same code for V)
     for i in range(1, N-1):
         aU[i] = -0.5*beta*(nu_tp[i] + nu_tp[i-1])
-        bU[i] = 1+0.5*beta*(nu_tp[i+1] + 2*nu_tp[i] + nu_tp[i-1])
+        bU[i] = 1+0.5*beta*(nu_tp[i+1] + 2*nu_tp[i] + nu_tp[i-1])-(dt*c.Cveg[i]*Up[i])
         cU[i] = -0.5*beta*(nu_tp[i] + nu_tp[i+1])
         dU[i] = Up[i] - dt*Px[i]
     # Bottom-Boundary: log-law
-    bU[0] = 1+0.5*beta*(nu_tp[1] + nu_tp[0] + 2*(math.sqrt(C_D)/kappa)*nu_tp[0])
+    bU[0] = 1+0.5*beta*(nu_tp[1] + nu_tp[0] + 2*(math.sqrt(C_D)/kappa)*nu_tp[0])-(dt*c.Cveg[0]*Up[0])
     cU[0] = -0.5*beta*(nu_tp[1] + nu_tp[0])
     dU[0] =  Up[0] - dt*Px[0]
     # Top-Boundary: no stress
     aU[-1] = -0.5*beta*(nu_tp[-1] + nu_tp[N-2])
-    bU[-1] = 1+0.5*beta*(nu_tp[-1] + nu_tp[N-2])
+    bU[-1] = 1+0.5*beta*(nu_tp[-1] + nu_tp[N-2])-(dt*c.Cveg[-1]*Up[-1])
     dU[-1] = Up[-1] - dt*Px[-1]
     # Thomas algorithm to solve for U
     Unew = TDMA(aU, bU, cU, dU, N)
@@ -203,7 +200,7 @@ def turb_q2l(c, N, beta, dt, B, E, ustar, kappa, H, Up, nu_tp, zb, Kqp, Kzp, Q2L
     E1 = E[0]
     E2 = E[1]
     E3 = E[2]
-    
+
     aQ2L = np.zeros(N)
     bQ2L = np.zeros(N)
     cQ2L = np.zeros(N)
@@ -234,11 +231,9 @@ def turb_q2l(c, N, beta, dt, B, E, ustar, kappa, H, Up, nu_tp, zb, Kqp, Kzp, Q2L
             Q2Lnew[i] = SMALL
     return Q2Lnew
 
-def turbmix(c, SMALL, zb, Sq, Sm, Sh, nu, N_BVsq):
+def turbmix(c, SMALL, zb, Sq, Q2new, Q2Lnew, Sm, Sh, nu, N_BVsq):
     #  Calculate turbulent lengthscale (l) and mixing coefficients (kz, nu_t, kq)
     #     Works will all updated values 
-    Q2new = np.zeros(c.N)
-    Q2Lnew = np.zeros(c.N)
     Lnew = np.zeros(c.N)
     Kznew = np.zeros(c.N)
     Kqnew = np.zeros(c.N)
