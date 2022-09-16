@@ -3,6 +3,7 @@
 
 import math
 import numpy as np
+import pandas as pd
 
 class Column:
     def __init__(self, N, H, Len, SMALL):
@@ -35,6 +36,12 @@ class Column:
         self.dz = H/N
         self.dx = self.Length/N
         self.beta = self.dt/(self.dz**2)
+    
+    def import_veg(self, filename):
+        data = pd.read_csv(filename)
+        # compute relationship between LAI/density readings
+        # and Cveg here then send to column
+        self.Cveg = data['density'].values
         
     def setup(self, A, B, C, Sq, kappa, SMALL, nu, g, rho0, alpha):
         A1 = A[0]

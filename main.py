@@ -12,11 +12,12 @@ from advance import wc_advance
 
 
 # Test
-
+ 
 # Column initialization
 # Column(N, H, Length, SMALL)
 c1 = Column(80, 20, 10, SMALL) # Creation of column object
 c1.setup(A, B, C, Sq, kappa, SMALL, nu, g, rho0, alpha) # Filling in parameter values
+c1.import_veg('test_data.csv')
 t = [] 
 
 fig, ax = plt.subplots()
