@@ -6,7 +6,7 @@
 
 import math
 import numpy as np
-from params import A, B, C, E, SMALL, C_D, kappa, rho0, g, alpha, zb, u_crit, nu, Sq
+from .params import A, B, C, E, SMALL, C_D, kappa, rho0, g, alpha, zb, u_crit, nu, Sq
 
 def TDMA(aX, bX, cX, dX, N):
     x = np.zeros(N)

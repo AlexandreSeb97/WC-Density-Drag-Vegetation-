@@ -25,8 +25,8 @@ class Column:
         self.Kq = np.zeros(N) # Turbulent diffusivity for q2
         self.Kz = np.zeros(N) # Turbulent scalar diffusivity
 
-        self.Cveg = (np.linspace(0.0004, 0.0006, N)) #0.0005*np.ones(N) # Variable drag coefficient
-        self.Cveg[50:] = 0
+        # self.Cveg = (np.linspace(0.0004, 0.0006, N)) #0.0005*np.ones(N) # Variable drag coefficient
+        self.Cveg = np.zeros(N)
         # Model Parameters
         self.H = H # Column depth (m)
         self.Length = Len # Plane Length (m)
@@ -37,11 +37,12 @@ class Column:
         self.dx = self.Length/N
         self.beta = self.dt/(self.dz**2)
     
-    def import_veg(self, filename):
-        data = pd.read_csv(filename)
+    def import_veg(self, density, height):
         # compute relationship between LAI/density readings
         # and Cveg here then send to column
-        self.Cveg = data['density'].values
+        iid = int(height/self.dz)
+        self.Cveg[:iid] = density
+        return self
         
     def setup(self, A, B, C, Sq, kappa, SMALL, nu, g, rho0, alpha):
         A1 = A[0]
@@ -115,3 +116,5 @@ class Column:
             self.nu_t[i] = self.Sm[i] * self.Q[i] * self.L[i] + nu # Turbulent diffusivity for Q2
             self.Kq[i] = Sq*self.Q[i]*self.L[i] + nu # Turbulent viscosity
             self.Kz[i] = self.Sh[i] * self.Q[i] * self.L[i] + nu # Turbulent scalar diffusivity
+
+        return self
