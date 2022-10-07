@@ -37,11 +37,11 @@ class Column:
         self.dx = self.Length/N
         self.beta = self.dt/(self.dz**2)
     
-    def import_veg(self, density, height):
+    def import_veg(self, alpha, density, height):
         # compute relationship between LAI/density readings
         # and Cveg here then send to column
         iid = int(height/self.dz)
-        self.Cveg[:iid] = density
+        self.Cveg[:iid] = alpha*density # Please have alpha between 0 and 1
         return self
         
     def setup(self, A, B, C, Sq, kappa, SMALL, nu, g, rho0, alpha):

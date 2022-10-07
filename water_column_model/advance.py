@@ -6,6 +6,7 @@
 
 import math
 import numpy as np
+from numba import jit
 from .params import A, B, C, E, SMALL, C_D, kappa, rho0, g, alpha, zb, u_crit, nu, Sq
 
 def TDMA(aX, bX, cX, dX, N):
@@ -18,6 +19,7 @@ def TDMA(aX, bX, cX, dX, N):
         x[i] = (1/bX[i])*(dX[i] - cX[i]*x[i+1])
     return x
 
+@jit
 def wc_advance(c, T_Px, Px0, t):
     #  Place previous variable f into fp (i.e. q2 into q2p, etc)
     N = c.N
@@ -84,6 +86,7 @@ def update_params(c, SMALL, A, B, C):
 
     return Smnew, Shnew, Gh
 
+@jit
 def velocity(c, N, kappa, beta, dt, Px, Up, nu_tp):
     aU = np.zeros(N)
     bU = np.zeros(N)
