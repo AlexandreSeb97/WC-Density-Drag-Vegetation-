@@ -19,7 +19,6 @@ def TDMA(aX, bX, cX, dX, N):
         x[i] = (1/bX[i])*(dX[i] - cX[i]*x[i+1])
     return x
 
-@jit
 def wc_advance(c, T_Px, Px0, t):
     #  Place previous variable f into fp (i.e. q2 into q2p, etc)
     N = c.N
@@ -86,7 +85,6 @@ def update_params(c, SMALL, A, B, C):
 
     return Smnew, Shnew, Gh
 
-@jit
 def velocity(c, N, kappa, beta, dt, Px, Up, nu_tp):
     aU = np.zeros(N)
     bU = np.zeros(N)
@@ -96,16 +94,16 @@ def velocity(c, N, kappa, beta, dt, Px, Up, nu_tp):
     # Advance velocity (U, could also implement the same code for V)
     for i in range(1, N-1):
         aU[i] = -0.5*beta*(nu_tp[i] + nu_tp[i-1])
-        bU[i] = 1+0.5*beta*(nu_tp[i+1] + 2*nu_tp[i] + nu_tp[i-1])-(dt*c.Cveg[i]*Up[i])
+        bU[i] = 1+0.5*beta*(nu_tp[i+1] + 2*nu_tp[i] + nu_tp[i-1])+(dt*c.Cveg[i]*abs(Up[i]))
         cU[i] = -0.5*beta*(nu_tp[i] + nu_tp[i+1])
         dU[i] = Up[i] - dt*Px[i]
     # Bottom-Boundary: log-law
-    bU[0] = 1+0.5*beta*(nu_tp[1] + nu_tp[0] + 2*(math.sqrt(C_D)/kappa)*nu_tp[0])-(dt*c.Cveg[0]*Up[0])
+    bU[0] = 1+0.5*beta*(nu_tp[1] + nu_tp[0] + 2*(math.sqrt(C_D)/kappa)*nu_tp[0])+(dt*c.Cveg[0]*abs(Up[0]))
     cU[0] = -0.5*beta*(nu_tp[1] + nu_tp[0])
     dU[0] =  Up[0] - dt*Px[0]
     # Top-Boundary: no stress
     aU[-1] = -0.5*beta*(nu_tp[-1] + nu_tp[N-2])
-    bU[-1] = 1+0.5*beta*(nu_tp[-1] + nu_tp[N-2])-(dt*c.Cveg[-1]*Up[-1])
+    bU[-1] = 1+0.5*beta*(nu_tp[-1] + nu_tp[N-2])+(dt*c.Cveg[-1]*abs(Up[-1]))
     dU[-1] = Up[-1] - dt*Px[-1]
     # Thomas algorithm to solve for U
     Unew = TDMA(aU, bU, cU, dU, N)

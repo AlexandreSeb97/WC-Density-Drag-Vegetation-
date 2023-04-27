@@ -31,17 +31,25 @@ class Column:
         self.H = H # Column depth (m)
         self.Length = Len # Plane Length (m)
         self.N = N  # No. of grid points
-        self.dt = 60  # Size of time step (s)
-        self.M = 2000  # No. of time steps
+        
         self.dz = H/N
         self.dx = self.Length/N
+
+        self.M = 1000  # No. of time steps
+        
+        # Dynamically adjusting dt for stability
+        if (self.dz)**2/1e-6 <= 60:
+            self.dt = (self.dz)**2/1e-6
+        else:
+            self.dt = 60  # Size of time step (s)
+
         self.beta = self.dt/(self.dz**2)
-    
+
     def import_veg(self, alpha, density, height):
         # compute relationship between LAI/density readings
         # and Cveg here then send to column
         iid = int(height/self.dz)
-        self.Cveg[:iid] = alpha*density # Please have alpha between 0 and 1
+        self.Cveg[:iid] = alpha*0.0001*density # Please have alpha between 0 and 1
         return self
         
     def setup(self, A, B, C, Sq, kappa, SMALL, nu, g, rho0, alpha):
@@ -93,7 +101,7 @@ class Column:
                 self.N_BVsq[i] = ((-g/rho0)*(self.rho[i+1] - self.rho[i])/(self.dz))
             except ValueError:
                 self.N_BV[i] = math.sqrt(((-g/rho0)*(self.rho[i] - self.rho[i+1])/(self.dz)))
-                self._BVsq[i] = ((-g/rho0)*(self.rho[i+1] - self.rho[i])/(self.dz))
+                self.N_BVsq[i] = ((-g/rho0)*(self.rho[i+1] - self.rho[i])/(self.dz))
         try: 
             self.N_BV[-1] = math.sqrt(((-g/rho0)*(self.rho[self.N-1] - self.rho[self.N-2])/(self.dz)))
             self.N_BVsq[-1] = ((-g/rho0)*(self.rho[self.N-1] - self.rho[self.N-2])/(self.dz))
