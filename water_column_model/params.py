@@ -11,7 +11,7 @@ SMALL = 1e-6
 Ar = 1.25 # Erosion coefficient
 rho0 = 1000 # kg/m3 - water density
 alpha = 0 # Thermal expansivity
-px0 = -0.0005# Magnitude of pressure gradient forcing
+px0 = -0.00025# Magnitude of pressure gradient forcing
 t_px = 0 # Periodic pressure forcing
 
 # Model Parameters
